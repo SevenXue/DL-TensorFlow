@@ -21,6 +21,9 @@ with tf.Session() as sess:
 
 
 #feed的使用
+#提供feed数据作为RUN()调用的参数
+
+#tf.placeholder创建占位符
 input4 = tf.placeholder(tf.float32)
 input5 = tf.placeholder(tf.float32)
 output = tf.multiply(input4, input5)
