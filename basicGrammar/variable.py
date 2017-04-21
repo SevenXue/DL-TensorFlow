@@ -14,7 +14,7 @@ update = tf.assign(state, new_value)
 
 # 启动图后， 变量必须先经过’初始化‘（init）op初始化
 # 首先必须增加一个’初始化‘op到图中
-init_op =tf.fglobal_variables_initializers()
+init_op =tf.initialize_all_variables()
 
 with tf.Session() as sess:
     # 运行 ’init‘ op
