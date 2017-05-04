@@ -10,17 +10,22 @@ minist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 import tensorflow as tf
 
+#占位符，None代表张量的第一个维度可以是任何长度
 x = tf.placeholder(tf.float32, [None, 784])
 
-
+#W为权重，b代表偏置量
 W = tf.Variable(tf.zeros([784,10]))
 b = tf.Variable(tf.zeros([10]))
 
+# softmax
 y = tf.nn.softmax(tf.matmul(x,W) + b)
+
 
 y_ = tf.placeholder(tf.float32, [None,10])
 
+#计算交叉熵
 cross_entropy = -tf.reduce_sum(y_*tf.log(y))
+
 
 train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
 
