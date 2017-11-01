@@ -2,7 +2,7 @@
 import tensorflow as tf
 import numpy as np
 import pandas as pd
-
+import matplotlib.pyplot as plt
 
 # column_names = ['Sample code number', 'Clump Thickness', 'Cell Size',
 #                'Uniformity of Cell Shape', 'Marginal Adhesion', 'Single Epithelial Cell Size',
@@ -66,7 +66,7 @@ with tf.Session() as sess:
     test_negative = test.loc[test['Class'] ==2][['Clump Thickness', 'Uniformity of Cell Size']]
     test_postive = test.loc[test['Class'] ==4][['Clump Thickness', 'Uniformity of Cell Size']]
 
-    import matplotlib.pyplot as plt
+
 
     plt.scatter(test_negative['Clump Thickness'], test_negative['Uniformity of Cell Size'],\
                 marker='o', s=200, c='red')
