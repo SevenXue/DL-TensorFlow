@@ -68,9 +68,9 @@ with tf.Session() as sess:
 
 
 
-    plt.scatter(test_negative['Clump Thickness'], test_negative['Uniformity of Cell Size'],\
+    plt.scatter(test_negative['Clump Thickness'], test_negative['Uniformity of Cell Size'],
                 marker='o', s=200, c='red')
-    plt.scatter(test_postive['Clump Thickness'], test_postive['Uniformity of Cell Size'],\
+    plt.scatter(test_postive['Clump Thickness'], test_postive['Uniformity of Cell Size'],
                 marker='x', s=150, c='black')
 
     plt.xlabel('Clump Thickness')
