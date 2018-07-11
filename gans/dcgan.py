@@ -120,7 +120,7 @@ class DCGAN(object):
         optimizer = RMSprop(lr=0.0002, decay=6e-8)
         self.DM = Sequential()
         self.DM.add(self.discriminator())
-        self.DM.compile(loss='binary_crossentropy', optimizer=optimizer,\
+        self.DM.compile(loss='binary_crossentropy', optimizer=optimizer,
             metrics=['accuracy'])
         return self.DM
 
@@ -131,22 +131,22 @@ class DCGAN(object):
         self.AM = Sequential()
         self.AM.add(self.generator())
         self.AM.add(self.discriminator())
-        self.AM.compile(loss='binary_crossentropy', optimizer=optimizer,\
+        self.AM.compile(loss='binary_crossentropy', optimizer=optimizer,
             metrics=['accuracy'])
         return self.AM
 
 class MNIST_DCGAN(object):
-    def __init__(self):
+    def  __init__(self):
         self.img_rows = 28
         self.img_cols = 28
         self.channel = 1
 
-        self.x_train = input_data.read_data_sets("mnist", one_hot=True).train.images
+        self.x_train = input_data.read_data_sets("MNIST_data/", one_hot=True).train.images
         self.x_train = self.x_train.reshape(-1, self.img_rows, self.img_cols, 1).astype(np.float32)
-        print(type(self.x_train))
+        #print(type(self.x_train))
 
         self.DCGAN = DCGAN()
-        self.discriminator =  self.DCGAN.discriminator_model()
+        self.discriminator = self.DCGAN.discriminator_model()
         self.adversarial = self.DCGAN.adversarial_model()
         self.generator = self.DCGAN.generator()
 
@@ -164,15 +164,15 @@ class MNIST_DCGAN(object):
             y[batch_size:, :] = 0
             d_loss = self.discriminator.train_on_batch(x, y)
 
-            y = np.ones([batch_size, 1])
+            y = np.ones([batch_size, 1])    #这里的label为1，是为了让生成的图片逼近真实图片
             noise = np.random.uniform(-1.0, 1.0, size=[batch_size, 100])
             a_loss = self.adversarial.train_on_batch(noise, y)
             log_mesg = "%d: [D loss: %f, acc: %f]" % (i, d_loss[0], d_loss[1])
             log_mesg = "%s  [A loss: %f, acc: %f]" % (log_mesg, a_loss[0], a_loss[1])
             print(log_mesg)
-            if save_interval>0:
+            if save_interval > 0:
                 if (i+1)%save_interval==0:
-                    self.plot_images(save2file=True, samples=noise_input.shape[0],\
+                    self.plot_images(save2file=True, samples=noise_input.shape[0],
                         noise=noise_input, step=(i+1))
 
     def plot_images(self, save2file=False, fake=True, samples=16, noise=None, step=0):
@@ -204,8 +204,9 @@ class MNIST_DCGAN(object):
 if __name__ == '__main__':
 
      mnist_dcgan = MNIST_DCGAN()
-    # timer = ElapsedTimer()
-    # mnist_dcgan.train(train_steps=10000, batch_size=256, save_interval=500)
-    # timer.elapsed_time()
-    # mnist_dcgan.plot_images(fake=True)
-    # mnist_dcgan.plot_images(fake=False, save2file=True)
+     timer = ElapsedTimer()
+     mnist_dcgan.train(train_steps=500, batch_size=256, save_interval=500)
+     timer.elapsed_time()
+     mnist_dcgan.plot_images(fake=True)
+
+     mnist_dcgan.plot_images(fake=False, save2file=True)
