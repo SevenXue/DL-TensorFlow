@@ -6,7 +6,7 @@ from keras.optimizers import Adam
 from keras_contrib.layers.normalization import InstanceNormalization
 import time
 import numpy as np
-from da
+from ..cyclygan.data_loader import DataLoader
 
 
 class CycleGan():
@@ -17,6 +17,10 @@ class CycleGan():
         self.channels = 3
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
 
+        # configure data loader
+        self.dataset_name = 'apple2orange'
+        self.data_loader = DataLoader(dataset_name=self.dataset_name,
+                                      img_res=(self.img_rows,self.img_cols))
         # calulate output shape of D (patchGAN)
         patch = int(self.img_rows / 2**4)
         self.disc_patch = (patch, patch, 1)
@@ -152,8 +156,48 @@ class CycleGan():
 
         fake = np.zeros((batch_size,) + self.disc_patch)
 
-        for epoch in epochs:
-            for batch_i, (imgs_A, imgs_B) in enumerate(self.)
+        for epoch in range(epochs):
+            for batch_i, (imgs_A, imgs_B) in enumerate(self.data_loader.load_batch(batch_size)):
+
+                # train discriminators
+
+                # translate images to opposite domain
+                fake_B = self.g_AB.predict(imgs_A)
+                fake_A = self.g_BA.predict(imgs_B)
+
+                dA_loss_real = self.d_A.train_on_batch(imgs_A, valid)
+                dA_loss_fake = self.d_A.train_on_batch(fake_A, fake)
+                dA_loss = 0.5 * np.add(dA_loss_real, dA_loss_fake)
+
+                dB_loss_real = self.d_B.train_on_batch(imgs_B, valid)
+                dB_loss_fake = self.d_B.train_on_batch(fake_B, fake)
+                dB_loss = 0.5 * np.add(dB_loss_real, dB_loss_fake)
+
+                # total disciminator loss
+                d_loss = 0.5 * np.add(dA_loss, dB_loss)
+
+                # train generators
+
+                g_loss = self.combined.train_on_batch([imgs_A, imgs_B],
+                                                      [valid, valid,
+                                                       imgs_A, imgs_B,
+                                                       imgs_A, imgs_B])
+
+                run_time = time.time() - start_time
+
+                print("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %05f, adv: %05f, recon: %05f, id: %05f] time: %s"
+                      % (epoch, epochs,
+                         batch_i, self.data_loader.n_batches,
+                         d_loss[0], 100*d_loss[1],
+                         g_loss[0],
+                         np.mean(g_loss[1:3]),
+                         np.mean(g_loss[3:5]),
+                         np.mean(g_loss[5:6]),
+                         run_time))
+
+
+
+
 
 
 
