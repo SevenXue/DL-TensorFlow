@@ -7,7 +7,7 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.utils import plot_model
 import time
 import numpy as np
-from ..pix2pix.data_loader import DataLoader
+from data_loader import DataLoader
 import os
 import matplotlib.pyplot as plt
 
