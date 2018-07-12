@@ -30,7 +30,7 @@ class DataLoader():
         return imgs
 
     def load_batch(self, batch_size=1, is_testing=False):
-        data_type = "train" if not is_testing else "val"
+        data_type = "train" if not is_testing else "test"
         path_A = glob('./datasets/%s/%sA/*' % (self.dataset_name, data_type))
         path_B = glob('./datasets/%s/%sB/*' % (self.dataset_name, data_type))
 

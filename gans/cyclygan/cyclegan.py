@@ -1,13 +1,15 @@
-from keras.models import Sequential, Model
-from keras.layers import Dense, Input, Reshape, Dropout, Concatenate
+from keras.models import Model, Sequential
+from keras.layers import Dense, Input, Reshape, Dropout, Concatenate, Conv2D
 from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import UpSampling2D, Conv2D
+from keras.layers.convolutional import UpSampling2D
 from keras.optimizers import Adam
 from keras_contrib.layers.normalization import InstanceNormalization
 import time
 import numpy as np
-from ..cyclygan.data_loader import DataLoader
-
+from data_loader import DataLoader
+import os
+import matplotlib.pyplot as plt
+from keras.utils import plot_model
 
 class CycleGan():
 
@@ -20,7 +22,7 @@ class CycleGan():
         # configure data loader
         self.dataset_name = 'apple2orange'
         self.data_loader = DataLoader(dataset_name=self.dataset_name,
-                                      img_res=(self.img_rows,self.img_cols))
+                                      img_res=(self.img_rows, self.img_cols))
         # calulate output shape of D (patchGAN)
         patch = int(self.img_rows / 2**4)
         self.disc_patch = (patch, patch, 1)
@@ -48,10 +50,17 @@ class CycleGan():
             optimizer=optimizer,
             metrics=['accuracy']
         )
+        # save d_model as picture
+        plot_model(self.d_A, to_file='visual/d_A.png', show_shapes=True, show_layer_names=True)
+        plot_model(self.d_B, to_file='visual/d_B.png', show_shapes=True, show_layer_names=True)
 
         #Build the generator
         self.g_AB = self.generator()
         self.g_BA = self.generator()
+
+        # save g_model as picture
+        plot_model(self.g_AB, to_file='visual/g_AB.png', show_shapes=True, show_layer_names=True)
+        plot_model(self.g_BA, to_file='visual/g_BA.png', show_shapes=True, show_layer_names=True)
 
         #input images from both domain
         img_A = Input(shape=self.img_shape)
@@ -89,25 +98,29 @@ class CycleGan():
                                             self.lambda_id, self.lambda_id],
                               optimizer=optimizer)
 
+        # save combine_model as picture
+        plot_model(self.combined, to_file='visual/combined.png', show_shapes=True, show_layer_names=True)
+
 
     def generator(self):
 
         def conv2d(layer_input, filters, f_size=4):
             d = Conv2D(filters, kernel_size=f_size, padding='same')(layer_input)
             d = LeakyReLU(alpha=0.2)(d)
-            d = InstanceNormalization(d)
+            d = InstanceNormalization()(d)
 
             return d
 
         def deconv2d(layer_input, skip_input, filters, f_size=4, dropout_rate=0):
 
-            u = UpSampling2D(size=2)(layer_input)
+            u = UpSampling2D(size=1)(layer_input)
             u = Conv2D(filters, kernel_size=f_size, strides=1, padding='same', activation='relu')(u)
             if dropout_rate:
                 u = Dropout(dropout_rate)(u)
             u = InstanceNormalization()(u)
-            u = Concatenate([u, skip_input])
+            u = Concatenate()([u, skip_input])
             return u
+
         # image input
         d0 = Input(shape=self.img_shape)
 
@@ -122,7 +135,7 @@ class CycleGan():
         u2 = deconv2d(u1, d2, self.gf*2)
         u3 = deconv2d(u2, d1, self.gf)
 
-        u4 = UpSampling2D(size=2)(u3)
+        u4 = UpSampling2D(size=1)(u3)
         outut_img = Conv2D(self.channels, kernel_size=4, strides=1, padding='same', activation='tanh')(u4)
 
         return Model(d0, outut_img)
@@ -195,6 +208,43 @@ class CycleGan():
                          np.mean(g_loss[5:6]),
                          run_time))
 
+                if batch_i % sample_interval == 0:
+                    self.sample_images(epoch, batch_i)
+
+    def sample_images(self, epoch, batch_i):
+
+        os.makedirs('images/%s' % self.dataset_name, exist_ok=True)
+        r, c = 2, 3
+
+        imgs_A = self.data_loader.load_data(domain="A", batch_size=1, is_testing=True)
+        imgs_B = self.data_loader.load_data(domain='B', batch_size=1, is_testing=True)
+
+        fake_B = self.g_AB.predict(imgs_A)
+        fake_A = self.g_BA.predict(imgs_B)
+
+        reconstr_A = self.g_BA.predict(fake_B)
+        reconstr_B = self.g_AB.predict(fake_A)
+
+        gen_imgs = np.concatenate([imgs_A, fake_B, reconstr_A, imgs_B, fake_A, reconstr_B])
+
+        gen_imgs = 0.5 * gen_imgs + 0.5
+
+        titles = ['Original', 'Translated', 'Reconstructed']
+        fig, axs = plt.subplots(r, c)
+        cnt=0
+        for i in range(r):
+            for j in range(c):
+                axs[i, j].imshow(gen_imgs[cnt])
+                axs[i, j].set_title(titles[j])
+                axs[i, j].axis('off')
+                cnt += 1
+
+        fig.savefig('images/%s/%d_%d.png' %(self.dataset_name, epoch, batch_i))
+        plt.close()
+
+if __name__ == '__main__':
+    gan = CycleGan()
+    gan.train(epochs=200, batch_size=1, sample_interval=200)
 
 
 
