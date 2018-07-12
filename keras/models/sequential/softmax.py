@@ -28,6 +28,6 @@ model.compile(loss='categorical_crossentropy',
 model.fit(x_train, y_train, epochs=20, batch_size=128)
 score = model.evaluate(x_test, y_test, batch_size=128)
 
-plot_model(model, to_file='softmax.png', show_shapes=True)
+plot_model(model, to_file='view/softmax.png', show_shapes=True)
 
 

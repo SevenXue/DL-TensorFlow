@@ -2,6 +2,7 @@ from keras.layers import Input, Embedding, LSTM, Dense
 from keras.models import Model
 import  keras
 from keras.utils import plot_model
+
 #lstm
 main_input = Input(shape=(100,), dtype='int32', name='main_input')
 
@@ -25,4 +26,4 @@ model = Model(inputs=[main_input, auxiliary_input], outputs=[main_output, auxili
 model.compile(optimizer='rmsprop', loss='binary_crossentropy',
               loss_weights=[1., 0.2])
 
-plot_model(model, to_file='visual/func.png', show_shapes=True, show_layer_names=True)
+plot_model(model, to_file='view/func.png', show_shapes=True, show_layer_names=True)
