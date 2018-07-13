@@ -7,7 +7,7 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.utils import plot_model
 import time
 import numpy as np
-from ..pix2pix.data_loader import DataLoader
+from data_loader import DataLoader
 import os
 import matplotlib.pyplot as plt
 
@@ -67,15 +67,15 @@ class Pix2pix():
     def build_generator(self):
 
         def conv(layer_input, filters, f_size=4, bn=True):
-            d = Conv2D(filters, kernel_size=f_size, padding='same')(layer_input)
+            d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
             d = LeakyReLU()(d)
             if bn:
                 d = BatchNormalization()(d)
             return d
 
         def deconv(layer_input, skip_input, filters, f_size=4, dropout_rate=0):
-            #u = UpSampling2D(size=2)()
-            u = Conv2D(filters, kernel_size=f_size, padding='same')(layer_input)
+            u = UpSampling2D(size=2)(layer_input)
+            u = Conv2D(filters, kernel_size=f_size, strides=1, padding='same')(u)
             if dropout_rate:
                 u = Dropout(dropout_rate)(u)
             u = BatchNormalization(momentum=0.8)(u)
@@ -101,7 +101,8 @@ class Pix2pix():
         u5 = deconv(u4, d2, self.gf*2)
         u6 = deconv(u5, d1, self.df)
 
-        output_img = Conv2D(self.channels, kernel_size=4, strides=1, padding='same', activation='tanh')(u6)
+        u7 = UpSampling2D(size=2)(u6)
+        output_img = Conv2D(self.channels, kernel_size=4, strides=1, padding='same', activation='tanh')(u7)
 
         return Model(d0, output_img)
 
@@ -111,7 +112,7 @@ class Pix2pix():
     def build_discriminator(self):
 
         def conv2d(layer_input, filters, f_size=4, bn=True):
-            d = Conv2D(filters, kernel_size=f_size, padding='same')(layer_input)
+            d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
             d = LeakyReLU()(d)
             if bn:
                 d = BatchNormalization(momentum=0.8)(d)
@@ -135,9 +136,8 @@ class Pix2pix():
         start_time = time.time()
 
         # adversarial loss ground truths
-
         valid = np.ones((batch_size,) + self.disc_path)
-        fake = np.zeros((batch_size,), self.disc_path)
+        fake = np.zeros((batch_size,) + self.disc_path)
 
         for epoch in range(epochs):
             for batch_i, (imgs_A, imgs_B) in enumerate(self.data_loader.load_batch(batch_size)):
@@ -156,12 +156,15 @@ class Pix2pix():
                 run_time = time.time() - start_time
 
                 # plot the progress
-                print("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time :%s s" %
-                      epoch, epochs,
+                print("[Epoch %d/%d] [Batch %d/%d] [D loss: %f, acc: %3d%%] [G loss: %f] time :%s" %
+                      (epoch, epochs,
                       batch_i, self.data_loader.n_batches,
                       d_loss[0], 100*d_loss[1],
                       g_loss[0],
-                      run_time)
+                      run_time))
+
+                if batch_i % sample_interval == 0:
+                    self.sample_images(epoch, batch_i)
 
     def sample_images(self, epoch, batch_i):
         os.makedirs('images/%s' % self.data_name, exist_ok=True)
@@ -178,7 +181,7 @@ class Pix2pix():
         for i in range(r):
             for j in range(c):
                 axs[i, j].imshow(gen_imgs[cnt])
-                axs[i, j].title(titles[i])
+                axs[i, j].set_title(titles[i])
                 axs[i, j].axis('off')
                 cnt += 1
 
@@ -187,3 +190,4 @@ class Pix2pix():
 
 if __name__ == '__main__':
     gan = Pix2pix()
+    gan.train(epochs=200 , batch_size=1, sample_interval=200)
