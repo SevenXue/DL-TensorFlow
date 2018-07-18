@@ -8,9 +8,9 @@ from keras.utils import plot_model
 
 #DATA
 import numpy as np
-x_train = np.random.random((1000,20))
+x_train = np.random.random((1000, 20))
 y_train = keras.utils.to_categorical(np.random.randint(10, size=(1000,1)), num_classes=10)
-x_test = np.random.random((100,20))
+x_test = np.random.random((100, 20))
 y_test = keras.utils.to_categorical(np.random.randint(10, size=(100, 1)), num_classes=10)
 
 #MODEL

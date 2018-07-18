@@ -1,6 +1,6 @@
 from keras.layers import Input, Embedding, LSTM, Dense
 from keras.models import Model
-import  keras
+import keras
 from keras.utils import plot_model
 
 #lstm
