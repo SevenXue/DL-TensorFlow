@@ -10,6 +10,7 @@ import numpy as np
 from data_loader import DataLoader
 import os
 import matplotlib.pyplot as plt
+from ann_visualizer.visualize import ann_viz
 
 class Pix2pix():
 
@@ -43,6 +44,8 @@ class Pix2pix():
                                    metrics=['accuracy'])
         plot_model(self.discriminator, to_file='view/discriminator.png', show_shapes=True, show_layer_names=True)
 
+        #ann_viz(self.discriminator, view=True, filename='view/discriminator.gv', title='discriminator')
+
         #build the generator
         self.generator = self.build_generator()
         plot_model(self.generator, to_file='view/generaor.png', show_shapes=True, show_layer_names=True)
@@ -50,7 +53,7 @@ class Pix2pix():
         img_A = Input(shape=self.img_shape)
         img_B = Input(shape=self.img_shape)
 
-        fake_A = self.generator(img_A)
+        fake_A = self.generator(img_B)
 
         # for the combined model we just train the generator
         self.discriminator.trainable = False
@@ -175,7 +178,11 @@ class Pix2pix():
 
         gen_imgs = np.concatenate([imgs_B, fake_A, imgs_A])
 
-        titles = ['Condition', 'Generated', 'Orginal']
+        gen_imgs = 0.5 * gen_imgs + 0.5
+
+        print(len(gen_imgs))
+
+        titles = ['Condition', 'Generated', 'Original']
         fig, axs = plt.subplots(r, c)
         cnt = 0
         for i in range(r):
@@ -190,4 +197,4 @@ class Pix2pix():
 
 if __name__ == '__main__':
     gan = Pix2pix()
-    gan.train(epochs=200 , batch_size=1, sample_interval=200)
+    #gan.train(epochs=100, batch_size=1, sample_interval=200)

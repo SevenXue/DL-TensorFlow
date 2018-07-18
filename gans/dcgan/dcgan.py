@@ -53,8 +53,7 @@ class DCGAN(object):
         # In: 28 x 28 x 1, depth = 1
         # Out: 14 x 14 x 1, depth=64
         input_shape = (self.img_rows, self.img_cols, self.channel)
-        self.D.add(Conv2D(depth*1, 5, strides=2, input_shape=input_shape,\
-            padding='same'))
+        self.D.add(Conv2D(depth*1, 5, strides=2, input_shape=input_shape, padding='same'))
         self.D.add(LeakyReLU(alpha=0.2))
         self.D.add(Dropout(dropout))
 
@@ -164,7 +163,7 @@ class MNIST_DCGAN(object):
             y[batch_size:, :] = 0
             d_loss = self.discriminator.train_on_batch(x, y)
 
-            y = np.ones([batch_size, 1])    #这里的label为1，是为了让生成的图片逼近真实图片
+            y = np.ones([batch_size, 1])    #这里的label为1
             noise = np.random.uniform(-1.0, 1.0, size=[batch_size, 100])
             a_loss = self.adversarial.train_on_batch(noise, y)
             log_mesg = "%d: [D loss: %f, acc: %f]" % (i, d_loss[0], d_loss[1])

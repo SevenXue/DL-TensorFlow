@@ -105,7 +105,7 @@ class CycleGan():
     def generator(self):
 
         def conv2d(layer_input, filters, f_size=4):
-            d = Conv2D(filters, kernel_size=f_size, padding='same')(layer_input)
+            d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
             d = LeakyReLU(alpha=0.2)(d)
             d = InstanceNormalization()(d)
 
@@ -113,7 +113,7 @@ class CycleGan():
 
         def deconv2d(layer_input, skip_input, filters, f_size=4, dropout_rate=0):
 
-            u = UpSampling2D(size=1)(layer_input)
+            u = UpSampling2D(size=2)(layer_input)
             u = Conv2D(filters, kernel_size=f_size, strides=1, padding='same', activation='relu')(u)
             if dropout_rate:
                 u = Dropout(dropout_rate)(u)
@@ -135,7 +135,7 @@ class CycleGan():
         u2 = deconv2d(u1, d2, self.gf*2)
         u3 = deconv2d(u2, d1, self.gf)
 
-        u4 = UpSampling2D(size=1)(u3)
+        u4 = UpSampling2D(size=2)(u3)
         outut_img = Conv2D(self.channels, kernel_size=4, strides=1, padding='same', activation='tanh')(u4)
 
         return Model(d0, outut_img)
@@ -162,7 +162,7 @@ class CycleGan():
 
         return Model(img, validity)
 
-    def train(self, epochs, batch_size=1,sample_interval=50):
+    def train(self, epochs, batch_size=1, sample_interval=50):
         start_time = time.time()
 
         valid = np.ones((batch_size,) + self.disc_patch)
