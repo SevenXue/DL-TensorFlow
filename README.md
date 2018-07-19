@@ -1,8 +1,8 @@
 # DeepLearning
 - 开启Deep Learning之旅
 - *_ln意为learning，包含了学习框架时的project，包含了TensorFlow、keras、openCV
-- DL.AI为学习视频，具体指吴恩达deeplearning.ai.
-- 其他project中包含了一些通过模型，有CNN,RNN,GAN等。
+- DL.AI为网络课程相关内容，视频指吴恩达老师的deeplearning.ai.
+- 其他project中包含了一些常用模型，有CNN,RNN,GAN等。
 
 ## Chapter one
 
