@@ -131,6 +131,7 @@ class Pix2pix():
         d3 = conv2d(d2, self.df*4)
         d4 = conv2d(d3, self.df*8)
 
+
         validity = Conv2D(1, kernel_size=4, strides=1, padding='same')(d4)
 
         return Model([img_A, img_B], validity)

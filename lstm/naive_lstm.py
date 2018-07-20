@@ -3,7 +3,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
 from keras.utils import np_utils, plot_model
-
+from keras.callbacks import TensorBoard
 np.random.seed(7)
 
 # define the raw dataset
@@ -34,8 +34,9 @@ y = np_utils.to_categorical(dataY)
 model = Sequential()
 model.add(LSTM(32, input_shape=(x.shape[1], x.shape[2])))
 model.add(Dense(y.shape[1], activation='softmax'))
+model.summary()
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-model.fit(x, y, nb_epoch=500, batch_size=1, verbose=2)
+model.fit(x, y, epochs=500, batch_size=1, verbose=1, callbacks=[TensorBoard(log_dir='tensorboard/test')])
 scores = model.evaluate(x, y, verbose=0)
 print('Model Accuracy: %.2f%%' % (scores[1]*100))
 for pattern in dataX:
