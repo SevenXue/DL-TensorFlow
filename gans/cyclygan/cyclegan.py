@@ -103,6 +103,10 @@ class CycleGan():
 
 
     def generator(self):
+        """
+            构造了生成器，使用U-net网络
+        :return: generator
+        """
 
         def conv2d(layer_input, filters, f_size=4):
             d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
@@ -143,6 +147,10 @@ class CycleGan():
 
 
     def discriminator(self):
+        """
+            构造一个判别器
+        :return:
+        """
 
         def d_layer(layer_input, filters, f_size=4, normalization=True):
             d = Conv2D(filters, kernel_size=f_size, strides=2, padding='same')(layer_input)
